@@ -18,7 +18,7 @@ export function ScanChart({ data }: Props) {
     <div className="rounded-lg border border-border bg-white p-4">
       <h3 className="mb-4 text-sm font-medium">Scans — 30 derniers jours</h3>
       {data.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted">Aucun scan pour l'instant</p>
+        <p className="py-8 text-center text-sm text-muted">Aucun scan pour le moment</p>
       ) : (
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={data}>

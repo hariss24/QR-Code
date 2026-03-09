@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, BarChart3, Download, ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -26,11 +27,12 @@ export default async function QrDetailPage({ params }: { params: { id: string } 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* QR Preview */}
         <div className="flex flex-col items-center rounded-lg border border-border bg-white p-8">
-          <img
+          <Image
             src={`/api/qrcodes/${qr.id}/download?format=png&size=300`}
             alt={qr.name}
             width={300}
             height={300}
+            unoptimized
           />
           <div className="mt-6 flex gap-3">
             <a
