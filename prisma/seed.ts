@@ -1,62 +1,54 @@
-import { PrismaClient, QrCodeType, Role } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import { PrismaClient, QrCodeType } from "@prisma/client";
 import { subDays } from "date-fns";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  const password = await bcrypt.hash("password123", 10);
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@qrgen.local" },
-    create: { email: "admin@qrgen.local", name: "Admin", password, role: Role.ADMIN },
-    update: {}
+  const owner = await prisma.user.upsert({
+    where: { email: "owner@qrgen.local" },
+    create: { email: "owner@qrgen.local", name: "Owner" },
+    update: {},
   });
 
-  const user = await prisma.user.upsert({
-    where: { email: "user@qrgen.local" },
-    create: { email: "user@qrgen.local", name: "User Test", password },
-    update: {}
-  });
-
-  const folders = await Promise.all(["Marketing", "Événements", "Produits"].map((name) =>
-    prisma.folder.create({ data: { name, userId: user.id } })
-  ));
-
-  const types = [QrCodeType.DYNAMIC_URL, QrCodeType.STATIC_URL, QrCodeType.WIFI, QrCodeType.SMS, QrCodeType.EMAIL, QrCodeType.PLAIN_TEXT, QrCodeType.VCARD_PLUS, QrCodeType.COUPON, QrCodeType.EVENT, QrCodeType.SOCIAL_MEDIA];
-  const created = [];
-  for (let i = 0; i < 12; i++) {
+  const qrs = [];
+  const urls = [
+    "https://monportfolio.dev",
+    "https://monportfolio.dev/projets",
+    "https://monportfolio.dev/contact",
+    "https://linkedin.com/in/monprofil",
+    "https://github.com/monprofil",
+  ];
+  for (let i = 0; i < urls.length; i++) {
     const qr = await prisma.qrCode.create({
       data: {
-        name: `QR Demo ${i + 1}`,
-        type: types[i % types.length],
-        isDynamic: i % 2 === 0,
-        shortCode: `demo${i + 1}`,
-        content: { url: `https://example.com/${i + 1}`, text: `Contenu ${i + 1}` },
-        userId: user.id,
-        folderId: folders[i % folders.length].id,
-        foregroundColor: "#1A3C6E",
-        backgroundColor: "#FFFFFF"
-      }
+        name: `Flyer ${i + 1}`,
+        type: QrCodeType.DYNAMIC_URL,
+        isDynamic: true,
+        shortCode: `flyer${i + 1}`,
+        content: { url: urls[i] },
+        userId: owner.id,
+      },
     });
-    created.push(qr);
+    qrs.push(qr);
   }
 
-  for (let i = 0; i < 600; i++) {
+  const devices = ["mobile", "desktop", "tablet"];
+  const oses = ["iOS", "Android", "Windows", "macOS"];
+  const browsers = ["Chrome", "Safari", "Firefox", "Edge"];
+  for (let i = 0; i < 200; i++) {
     await prisma.scan.create({
       data: {
-        qrCodeId: created[i % created.length].id,
+        qrCodeId: qrs[i % qrs.length].id,
         ip: `192.168.1.${i % 255}`,
-        device: ["mobile", "desktop", "tablet"][i % 3],
-        os: ["iOS", "Android", "Windows", "macOS"][i % 4],
-        browser: ["Chrome", "Safari", "Firefox", "Edge"][i % 4],
-        country: ["France", "Belgique", "Canada"][i % 3],
-        city: ["Paris", "Lyon", "Montréal", "Bruxelles"][i % 4],
-        scannedAt: subDays(new Date(), i % 30)
-      }
+        device: devices[i % 3],
+        os: oses[i % 4],
+        browser: browsers[i % 4],
+        scannedAt: subDays(new Date(), i % 30),
+      },
     });
   }
 
-  console.log({ admin: admin.email, user: user.email });
+  console.log(`Seeded: ${owner.email}, ${qrs.length} QR codes, 200 scans`);
 }
 
 main().finally(() => prisma.$disconnect());

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
@@ -17,14 +17,12 @@
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
     "@prisma/client": "^5.12.1",
-    "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.372.0",
     "nanoid": "^5.0.7",
     "next": "^14.2.5",
-    "next-auth": "^4.24.7",
     "papaparse": "^5.4.1",
     "qrcode": "^1.5.4",
     "qrcode.react": "^3.1.0",
@@ -42,6 +40,7 @@
   "devDependencies": {
     "@types/node": "^20.14.10",
     "@types/papaparse": "^5.3.14",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/ua-parser-js": "^0.7.39",
