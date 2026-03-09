@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String?
+  password    String?
+  avatar      String?
+  role        Role         @default(USER)
+  plan        Plan         @default(FREE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  qrCodes     QrCode[]
+  folders     Folder[]
+  teamMembers TeamMember[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Plan {
+  FREE
+  STARTER
+  ADVANCED
+  PROFESSIONAL
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  qrCodes   QrCode[]
+  createdAt DateTime @default(now())
+}
+
+model QrCode {
+  id              String     @id @default(cuid())
+  name            String
+  type            QrCodeType
+  isDynamic       Boolean    @default(true)
+  shortCode       String     @unique
+  content         Json
+  foregroundColor String     @default("#000000")
+  backgroundColor String     @default("#FFFFFF")
+  cornerStyle     String     @default("square")
+  bodyStyle       String     @default("square")
+  logoUrl         String?
+  frameStyle      String?
+  frameText       String?
+  frameColor      String?
+  folderId        String?
+  folder          Folder?    @relation(fields: [folderId], references: [id])
+  userId          String
+  user            User       @relation(fields: [userId], references: [id])
+  campaignStart   DateTime?
+  campaignEnd     DateTime?
+  medium          String?
+  printCount      Int?
+  scans           Scan[]
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+enum QrCodeType {
+  DYNAMIC_URL
+  PDF
+  VCARD_PLUS
+  SOCIAL_MEDIA
+  VIDEO
+  IMAGE_GALLERY
+  EVENT
+  MP3
+  COUPON
+  BUSINESS_PAGE
+  RATING
+  FEEDBACK
+  RESTAURANT_MENU
+  APP_STORE
+  STATIC_URL
+  PLAIN_TEXT
+  EMAIL
+  SMS
+  WIFI
+  VCARD
+  TWITTER
+  INSTAGRAM
+  WHATSAPP
+  BITCOIN
+}
+
+model Scan {
+  id        String   @id @default(cuid())
+  qrCodeId  String
+  qrCode    QrCode   @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  ip        String?
+  userAgent String?
+  device    String?
+  os        String?
+  browser   String?
+  country   String?
+  city      String?
+  latitude  Float?
+  longitude Float?
+  referer   String?
+  scannedAt DateTime @default(now())
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  email     String
+  role      TeamRole @default(VIEWER)
+  invitedAt DateTime @default(now())
+}
+
+enum TeamRole {
+  VIEWER
+  EDITOR
+  ADMIN
+}
